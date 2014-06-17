@@ -81,7 +81,7 @@ Obsoletes:	%{_lib}devel-static-devel = %{version}-%{release}
 Development headers and libraries for writing programs using %{oname}.
 
 %prep
-%setup -q
+%setup -qn %{oname}-%{version}
 %apply_patches
 
 chmod 644 AUTHORS CREDITS ChangeLog Libraries.txt README.unix
