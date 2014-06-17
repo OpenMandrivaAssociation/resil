@@ -84,7 +84,7 @@ Development headers and libraries for writing programs using %{oname}.
 %setup -qn %{oname}-%{version}
 %apply_patches
 
-chmod 644 AUTHORS CREDITS ChangeLog Libraries.txt README.unix
+chmod 644 AUTHORS CREDITS ChangeLog README.unix
 
 # strip away annoying ^M
 find . -type f|xargs file|grep 'CRLF'|cut -d: -f1|xargs perl -p -i -e 's/\r//'
@@ -136,7 +136,7 @@ export CFLAGS="%{optflags} -O3 -funroll-loops -ffast-math -fomit-frame-pointer -
 %{_libdir}/libILUT.so.%{major}*
 
 %files -n %{devname}
-%doc AUTHORS CREDITS ChangeLog Libraries.txt README.unix
+%doc AUTHORS CREDITS ChangeLog README.unix
 %{_libdir}/*.so
 %{_libdir}/pkgconfig/*.pc
 %{_includedir}/IL
