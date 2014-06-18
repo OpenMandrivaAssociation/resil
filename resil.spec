@@ -33,6 +33,7 @@ BuildRequires:	pkgconfig(libpng)
 BuildRequires:	pkgconfig(OpenEXR)
 BuildRequires:	pkgconfig(sdl)
 BuildRequires:	pkgconfig(zlib)
+BuildRequires:	texinfo
 
 %description
 ResIL (continuation of DevIL project) is an Open Source image library whose
