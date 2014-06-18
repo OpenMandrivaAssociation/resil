@@ -113,8 +113,6 @@ autoconf
 
 %build
 export CFLAGS="%{optflags} -O3 -funroll-loops -ffast-math -fomit-frame-pointer -fexpensive-optimizations"
-export CC="gcc -std=gnu99"
-export CXX="g++ -std=gnu++11"
 
 %configure	\
 	--disable-static \
