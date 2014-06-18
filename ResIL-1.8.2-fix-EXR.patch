@@ -1,0 +1,177 @@
+--- ResIL-1.8.2/src-IL/include/il_exr.h.omv~	2014-06-18 14:22:13.957412000 +0200
++++ ResIL-1.8.2/src-IL/include/il_exr.h	2014-06-18 14:25:40.085412664 +0200
+@@ -47,10 +47,9 @@ typedef struct EXRHEAD
+ extern "C" {
+ #endif
+ 
+-ILboolean iIsValidExr();
++ILboolean iIsValidExr(SIO *io);
+ ILboolean iCheckExr(EXRHEAD *Header);
+ ILboolean iLoadExrInternal();
+-ILboolean iSaveExrInternal();
+ 
+ #ifdef __cplusplus
+ }
+--- ResIL-1.8.2/src-IL/include/il_internal.h.omv~	2014-06-18 14:18:49.967411343 +0200
++++ ResIL-1.8.2/src-IL/include/il_internal.h	2014-06-18 14:25:36.542412652 +0200
+@@ -260,9 +260,10 @@ ILboolean ilIsValidDpxF(ILHANDLE File);
+ ILboolean ilIsValidDpxL(const void *Lump, ILuint Size);
+ ILboolean iLoadDpxInternal(ILimage* image);
+ 
+-ILboolean ilIsValidExr(ILconst_string FileName);
++ILboolean ilIsValidExr(SIO *io);
+ ILboolean ilIsValidExrF(ILHANDLE File);
+ ILboolean ilIsValidExrL(const void *Lump, ILuint Size);
++ILboolean iSaveExrInternal();
+ 
+ ILboolean ilLoadExr(ILconst_string FileName);
+ ILboolean ilLoadExrF(ILHANDLE File);
+--- ResIL-1.8.2/src-IL/src/il_exr.cpp.omv~	2014-06-18 11:38:26.271380345 +0200
++++ ResIL-1.8.2/src-IL/src/il_exr.cpp	2014-06-18 14:22:47.550412108 +0200
+@@ -42,6 +42,7 @@
+ #endif
+ 
+ 
++#if 0
+ //! Checks if the file specified in FileName is a valid EXR file.
+ ILboolean ilIsValidExr(ILconst_string FileName)
+ {
+@@ -64,7 +65,17 @@ ILboolean ilIsValidExr(ILconst_string Fi
+ 	
+ 	return bExr;
+ }
++#endif
+ 
++ILboolean ilIsValidExr(SIO *io)
++{
++	ILuint		FirstPos;
++	ILboolean	bRet;
++	FirstPos = io->tell(io->handle);
++	bRet = iIsValidExr(io);
++	io->seek(io->handle, FirstPos, IL_SEEK_SET);
++	return bRet;
++}
+ 
+ //! Checks if the ILHANDLE contains a valid EXR file at the current position.
+ ILboolean ilIsValidExrF(ILHANDLE File)
+@@ -73,9 +84,9 @@ ILboolean ilIsValidExrF(ILHANDLE File)
+ 	ILboolean	bRet;
+ 	
+ 	iSetInputFile(File);
+-	FirstPos = itell();
+-	bRet = iIsValidExr();
+-	iseek(FirstPos, IL_SEEK_SET);
++	FirstPos = iCurImage->io.tell(iCurImage->io.handle);
++	bRet = iIsValidExr(&iCurImage->io);
++	iCurImage->io.seek(iCurImage->io.handle, FirstPos, IL_SEEK_SET);
+ 	
+ 	return bRet;
+ }
+@@ -85,28 +96,28 @@ ILboolean ilIsValidExrF(ILHANDLE File)
+ ILboolean ilIsValidExrL(const void *Lump, ILuint Size)
+ {
+ 	iSetInputLump(Lump, Size);
+-	return iIsValidExr();
++	return iIsValidExr(&iCurImage->io);
+ }
+ 
+ 
+ // Internal function used to get the EXR header from the current file.
+ ILboolean iGetExrHead(EXRHEAD *Header)
+ {
+-	Header->MagicNumber = GetLittleUInt();
+-	Header->Version = GetLittleUInt();
++	Header->MagicNumber = GetLittleUInt(&iCurImage->io);
++	Header->Version = GetLittleUInt(&iCurImage->io);
+ 
+ 	return IL_TRUE;
+ }
+ 
+ 
+ // Internal function to get the header and check it.
+-ILboolean iIsValidExr()
++ILboolean iIsValidExr(SIO *io)
+ {
+ 	EXRHEAD Head;
+ 
+ 	if (!iGetExrHead(&Head))
+ 		return IL_FALSE;
+-	iseek(-8, IL_SEEK_CUR);
++	io->seek(io->handle, -8, IL_SEEK_CUR);
+ 	
+ 	return iCheckExr(&Head);
+ }
+@@ -136,7 +147,7 @@ ilIStream::ilIStream() : Imf::IStream("N
+ 
+ bool ilIStream::read(char c[], int n)
+ {
+-	if (iread(c, 1, n) != n)
++	if (iCurImage->io.read(iCurImage->io.handle, c, 1, n) != n)
+ 		return false;
+ 	return true;
+ }
+@@ -148,7 +159,7 @@ Imf::Int64 ilIStream::tellg()
+ 	Imf::Int64 Pos;
+ 
+ 	// itell only returns a 32-bit value!
+-	Pos = itell();
++	Pos = iCurImage->io.tell(iCurImage->io.handle);
+ 
+ 	return Pos;
+ }
+@@ -159,7 +170,7 @@ Imf::Int64 ilIStream::tellg()
+ void ilIStream::seekg(Imf::Int64 Pos)
+ {
+ 	// iseek only uses a 32-bit value!
+-	iseek((ILint)Pos, IL_SEEK_SET);  // I am assuming this is seeking from the beginning.
++	iCurImage->io.seek(iCurImage->io.handle, (ILint)Pos, IL_SEEK_SET);  // I am assuming this is seeking from the beginning.
+ 	return;
+ }
+ 
+@@ -261,7 +272,7 @@ ilOStream::ilOStream() : Imf::OStream("N
+ 
+ void ilOStream::write(const char c[], int n)
+ {
+-	iwrite(c, 1, n);  //@TODO: Throw an exception here.
++	iCurImage->io.write(c, 1, n, iCurImage->io.handle);  //@TODO: Throw an exception here.
+ 	return;
+ }
+ 
+@@ -271,7 +282,7 @@ Imf::Int64 ilOStream::tellp()
+ 	Imf::Int64 Pos;
+ 
+ 	// itellw only returns a 32-bit value!
+-	Pos = itellw();
++	Pos = iCurImage->io.tell(iCurImage->io.handle);
+ 
+ 	return Pos;
+ }
+@@ -281,7 +292,7 @@ Imf::Int64 ilOStream::tellp()
+ void ilOStream::seekp(Imf::Int64 Pos)
+ {
+ 	// iseekw only uses a 32-bit value!
+-	iseekw((ILint)Pos, IL_SEEK_SET);  // I am assuming this is seeking from the beginning.
++	iCurImage->io.seek(iCurImage->io.handle, (ILint)Pos, IL_SEEK_SET);  // I am assuming this is seeking from the beginning.
+ 	return;
+ }
+ 
+--- ResIL-1.8.2/src-IL/src/il_io.cpp.omv~	2014-06-18 13:47:32.247405295 +0200
++++ ResIL-1.8.2/src-IL/src/il_io.cpp	2014-06-18 14:24:42.655412479 +0200
+@@ -305,7 +305,7 @@ ILenum ILAPIENTRY ilDetermineTypeFuncs()
+ 		case 'v':
+ 			if (buf[1] == '/' && buf[2] == '1' && buf[3] == 1)
+ 				#ifndef IL_NO_EXR
+-				if (iIsValidExr())
++				if (ilIsValidExr(&iCurImage->io))
+ 				#endif
+ 					return IL_EXR;
+ 			break;
+@@ -1102,7 +1102,7 @@ ILboolean ILAPIENTRY ilSaveFuncs2(ILimag
+ 
+ 	#ifndef IL_NO_EXR
+ 	case IL_EXR:
+-		bRet = iSaveExrInternal(FileName);
++		bRet = iSaveExrInternal();
+ 		break;
+ 	#endif
+ 

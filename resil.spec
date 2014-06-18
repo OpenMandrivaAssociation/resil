@@ -4,6 +4,7 @@
 %define libILU %mklibname ILU %{major}
 %define libILUT %mklibname ILUT %{major}
 %define devname %mklibname %{name} -d
+%define olddevname %mklibname devil -d
 
 Summary:	Open source image library
 Name:		resil
@@ -13,16 +14,21 @@ License:	LGPLv2+
 Group:		System/Libraries
 Url:		http://resil.sourceforge.net/
 Source0:	http://downloads.sourceforge.net/project/resil/%{version}/%{oname}-%{version}.zip
+Patch0:		ResIL-1.8.2-fix-buildsystem.patch
+Patch1:		ResIL-1.8.2-compile.patch
+Patch2:		ResIL-1.8.2-avoid-bogus-allegro-headers.patch
+Patch3:		ResIL-1.8.2-fix-EXR.patch
+Patch4:		ResIL-1.8.2-lcms2-on-unix.patch
 BuildRequires:	file
 BuildRequires:	libtool
 BuildRequires:	jpeg-devel
 BuildRequires:	pkgconfig(libmng)
 BuildRequires:	tiff-devel
-BuildRequires:	ungif-devel
+BuildRequires:	giflib-devel
 BuildRequires:	pkgconfig(allegro)
 BuildRequires:	pkgconfig(glu)
 BuildRequires:	pkgconfig(jasper)
-BuildRequires:	pkgconfig(lcms)
+BuildRequires:	pkgconfig(lcms2)
 BuildRequires:	pkgconfig(libpng)
 BuildRequires:	pkgconfig(OpenEXR)
 BuildRequires:	pkgconfig(sdl)
@@ -39,6 +45,7 @@ own project.
 Summary:	Tools provided by %{oname}
 Group:		System/Libraries
 Provides:	%{name} = %{version}-%{release}
+%rename		devil-utils
 
 %description	utils
 This package contains tools provided by %{oname}.
@@ -76,6 +83,7 @@ Requires:	%{libILUT} = %{version}-%{release}
 Provides:	%{name}-devel = %{version}-%{release}
 %define __noautoreq 'devel\\(liballeg.*'
 Obsoletes:	%{_lib}devel-static-devel = %{version}-%{release}
+%rename		%{olddevname}
 
 %description -n	%{devname}
 Development headers and libraries for writing programs using %{oname}.
@@ -84,41 +92,54 @@ Development headers and libraries for writing programs using %{oname}.
 %setup -qn %{oname}-%{version}
 %apply_patches
 
+# Funny 0000 permissions...
+chmod -R 0777 Input\ Libs/zlib128-dll
+# Remove useless bloat
+rm -rf \
+	Input\ Libs
+
 chmod 644 AUTHORS CREDITS ChangeLog README.unix
 
 # strip away annoying ^M
 find . -type f|xargs file|grep 'CRLF'|cut -d: -f1|xargs perl -p -i -e 's/\r//'
 find . -type f|xargs file|grep 'text'|cut -d: -f1|xargs perl -p -i -e 's/\r//'
+chmod +x configure
+
+aclocal -I m4
+autoheader
+automake -a
+autoconf
 
 %build
 export CFLAGS="%{optflags} -O3 -funroll-loops -ffast-math -fomit-frame-pointer -fexpensive-optimizations"
-# using autogen.sh results in configure failing with a problem in
-# ADD_CFLAGS, as of 0.7.3 - AdamW 2008/12
-#autoreconf
+export CC="gcc -std=gnu99"
+export CXX="g++ -std=gnu++11"
 
 %configure	\
 	--disable-static \
 	--enable-shared \
-	--enable-IL \
 	--enable-ILU \
 	--enable-ILUT \
-%ifnarch ix86
+%ifarch x86_64
 	--enable-x86_64 \
 	--enable-sse \
 	--enable-sse2 \
 	--disable-sse3 \
 %else
+%ifarch %ix86
 	--enable-x86 \
 	--disable-x86_64
 	--disable-sse \
 	--disable-sse2 \
 	--disable-sse3 \
 %endif
+%endif
 	--with-x \
 	--with-zlib=yes \
 	--enable-release
 
-%make CPPFLAGS="-DNOINLINE"
+# Not ready for SMP make as of 1.8.2
+make
 
 %install
 %makeinstall_std

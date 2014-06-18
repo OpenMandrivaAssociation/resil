@@ -1,0 +1,572 @@
+--- ResIL-1.8.2/src-IL/include/il_jpeg.h.omv~	2014-06-18 12:41:53.647392608 +0200
++++ ResIL-1.8.2/src-IL/include/il_jpeg.h	2014-06-18 12:43:32.598392927 +0200
+@@ -18,6 +18,10 @@
+ ILboolean iCheckJpg(ILubyte Header[2]);
+ ILboolean iIsValidJpg(void);
+ 
++#ifndef __cdecl
++#define __cdecl __attribute__((__cdecl__))
++#endif
++
+ #ifndef IL_USE_IJL
+ 	ILboolean __cdecl iLoadJpegInternal(void);
+ 	ILboolean iSaveJpegInternal(void);
+--- ResIL-1.8.2/src-IL/src/il_alloc.cpp.omv~	2014-06-18 11:33:26.748379380 +0200
++++ ResIL-1.8.2/src-IL/src/il_alloc.cpp	2014-06-18 11:33:39.103379420 +0200
+@@ -23,6 +23,7 @@
+ 	#endif
+ #endif//_WIN32
+ 
++#include "il.h" // for CONST_RESTRICT
+ #include "il_internal.h"
+ #include <stdlib.h>
+ #include <math.h>
+--- ResIL-1.8.2/src-IL/src/il_bmp.cpp.omv~	2014-06-18 12:44:33.218393122 +0200
++++ ResIL-1.8.2/src-IL/src/il_bmp.cpp	2014-06-18 13:33:56.696402668 +0200
+@@ -17,6 +17,12 @@
+ #include "il_bmp.h"
+ #include "il_endian.h"
+ #include <stdio.h>
++#include <stdint.h>
++#undef CONST_RESTRICT
++#define CONST_RESTRICT const
++typedef uint16_t WORD;
++typedef uint32_t DWORD;
++#undef putc
+ void GetShiftFromMask(const ILuint Mask, ILuint * CONST_RESTRICT ShiftLeft, ILuint * CONST_RESTRICT ShiftRight);
+ 
+ 
+--- ResIL-1.8.2/src-IL/src/il_cut.cpp.omv~	2014-06-18 13:40:35.078403951 +0200
++++ ResIL-1.8.2/src-IL/src/il_cut.cpp	2014-06-18 13:42:01.286404229 +0200
+@@ -17,6 +17,7 @@
+ #include "il_pal.h"
+ #include "il_bits.h"
+ 
++#define min(x,y) ((x) < (y) ? (x) : (y))
+ 
+ // Wrap it just in case...
+ #ifdef _MSC_VER
+--- ResIL-1.8.2/src-IL/src/il_dcx.cpp.omv~	2014-06-18 13:44:31.051404711 +0200
++++ ResIL-1.8.2/src-IL/src/il_dcx.cpp	2014-06-18 13:44:39.078404737 +0200
+@@ -16,6 +16,8 @@
+ #include "il_dcx.h"
+ #include "il_manip.h"
+ 
++#undef putc
++#undef getc
+ 
+ //! Checks if the file specified in FileName is a valid .dcx file.
+ ILboolean ilIsValidDcx(ILconst_string FileName)
+--- ResIL-1.8.2/src-IL/src/il_dds-save.cpp.omv~	2014-06-18 14:26:17.906412786 +0200
++++ ResIL-1.8.2/src-IL/src/il_dds-save.cpp	2014-06-18 14:26:25.966412812 +0200
+@@ -16,6 +16,8 @@
+ #include "il_manip.h"
+ #include <limits.h>
+ 
++#undef putc
++#undef getc
+ 
+ #ifndef IL_NO_DDS
+ 
+--- ResIL-1.8.2/src-IL/src/il_dicom.cpp.omv~	2014-06-18 14:29:15.243413357 +0200
++++ ResIL-1.8.2/src-IL/src/il_dicom.cpp	2014-06-18 14:29:20.229413373 +0200
+@@ -16,6 +16,8 @@
+ #include "il_internal.h"
+ #ifndef IL_NO_DICOM
+ 
++#undef getc
++
+ typedef struct DICOMHEAD
+ {
+ 	ILubyte		Signature[4];
+--- ResIL-1.8.2/src-IL/src/il_dpx.cpp.omv~	2014-06-18 14:29:27.378413396 +0200
++++ ResIL-1.8.2/src-IL/src/il_dpx.cpp	2014-06-18 14:29:33.157413415 +0200
+@@ -18,6 +18,7 @@
+ #include "il_dpx.h"
+ #include "il_bits.h"
+ 
++#undef getc
+ 
+ ILboolean DpxGetFileInfo(DPX_FILE_INFO *FileInfo)
+ {
+--- ResIL-1.8.2/src-IL/src/il_files.cpp.omv~	2014-06-18 13:37:22.341403330 +0200
++++ ResIL-1.8.2/src-IL/src/il_files.cpp	2014-06-18 13:37:46.126403407 +0200
+@@ -15,6 +15,8 @@
+ #include "il_internal.h"
+ #include <stdarg.h>
+ 
++#undef putc
++
+ // Lump read functions
+ ILboolean	ILAPIENTRY iEofLump(ILHANDLE h);
+ ILint		ILAPIENTRY iGetcLump(ILHANDLE h);
+--- ResIL-1.8.2/src-IL/src/il_gif.cpp.omv~	2014-06-18 13:39:54.743403821 +0200
++++ ResIL-1.8.2/src-IL/src/il_gif.cpp	2014-06-18 13:40:12.271403877 +0200
+@@ -21,6 +21,9 @@
+ #include "il_gif.h"
+ #include <stdio.h>
+ 
++#undef putc
++#undef getc
++
+ //-----------------------------------------------------------------------------
+ // ILimage offers all the members needed to reflect a GIF
+ 
+--- ResIL-1.8.2/src-IL/src/il_hdr.cpp.omv~	2014-06-18 14:28:09.865413146 +0200
++++ ResIL-1.8.2/src-IL/src/il_hdr.cpp	2014-06-18 14:28:33.406413222 +0200
+@@ -17,6 +17,9 @@
+ #include "il_endian.h"
+ #include <string.h>
+ 
++#undef getc
++#undef putc
++
+ // Find substr in bigstr, checking no more than max characters
+ // Zero-termination of bigstr is ignored
+ const char* strnstr(const char* bigstr, const char* substr, size_t max)
+--- ResIL-1.8.2/src-IL/src/il_icon.cpp.omv~	2014-06-18 13:44:47.258404763 +0200
++++ ResIL-1.8.2/src-IL/src/il_icon.cpp	2014-06-18 13:45:31.566404906 +0200
+@@ -17,6 +17,14 @@
+ #ifndef IL_NO_PNG
+ 	#include <png.h>
+ #endif
++#include <stdint.h>
++
++#undef putc
++#undef getc
++
++typedef uint8_t BYTE;
++typedef uint16_t WORD;
++typedef uint32_t DWORD;
+ 
+ struct ICONDIR {
+ 	WORD reserved;
+--- ResIL-1.8.2/src-IL/src/il_internal.cpp.omv~	2014-06-18 13:46:03.527405009 +0200
++++ ResIL-1.8.2/src-IL/src/il_internal.cpp	2014-06-18 13:46:09.494405028 +0200
+@@ -15,6 +15,8 @@
+ #include <string.h>
+ #include <stdlib.h>
+ 
++#undef getc
++#undef putc
+ 
+ // Global variable: stores the currently used image
+ ILimage *iCurImage = NULL;
+@@ -278,4 +280,4 @@ ILAPI ILboolean ILAPIENTRY ilDxtcDataToS
+ ILAPI ILboolean ILAPIENTRY ilSurfaceToDxtcData(ILenum Format)
+ {
+ 	return iSurfaceToDxtcData(iCurImage, Format);
+-}
+\ No newline at end of file
++}
+--- ResIL-1.8.2/src-IL/src/il_io.cpp.omv~	2014-06-18 13:47:32.247405295 +0200
++++ ResIL-1.8.2/src-IL/src/il_io.cpp	2014-06-18 14:24:42.655412479 +0200
+@@ -644,15 +644,15 @@ ILboolean ILAPIENTRY ilLoad(ILenum Type,
+ 
+ 		if (Type == IL_CUT) {
+ 			// Attempt to load the palette
+-			auto fnLen = wcslen(FileName);
++			auto fnLen = strlen(FileName);
+ 			if (fnLen > 4) {
+ 				if (FileName[fnLen-4] == '.'
+ 				&&  FileName[fnLen-3] == 'c'
+ 				&&  FileName[fnLen-2] == 'u'
+ 				&&  FileName[fnLen-1] == 't') {
+-					TCHAR* palFN = (TCHAR*) ialloc(2*fnLen+2);
+-					wcscpy(palFN, FileName);
+-					wcscpy(&palFN[fnLen-3], L"pal");
++					char* palFN = (char*) ialloc(2*fnLen+2);
++					strcpy(palFN, FileName);
++					strcpy(&palFN[fnLen-3], "pal");
+ 					iCurImage->io.handle = iCurImage->io.openReadOnly(palFN);
+ 					if (iCurImage->io.handle != NULL) {
+ 						ilLoadHaloPal(palFN);
+--- ResIL-1.8.2/src-IL/src/il_mp3.cpp.omv~	2014-06-18 14:29:39.833413436 +0200
++++ ResIL-1.8.2/src-IL/src/il_mp3.cpp	2014-06-18 14:29:44.061413450 +0200
+@@ -14,6 +14,8 @@
+ #ifndef IL_NO_MP3
+ #include "il_jpeg.h"
+ 
++#undef getc
++
+ typedef struct MP3HEAD
+ {
+ 	char	Signature[3];
+--- ResIL-1.8.2/src-IL/src/il_pal.cpp.omv~	2014-06-18 13:46:18.890405058 +0200
++++ ResIL-1.8.2/src-IL/src/il_pal.cpp	2014-06-18 13:47:08.742405219 +0200
+@@ -99,11 +99,11 @@ ILboolean ilLoadJascPal(ILconst_string F
+ 	}
+ 
+ 	iFgetw(Buff, BUFFLEN, PalFile);
+-	if (_stricmp((const char*)Buff, "JASC-PAL")) {
++	if (strcasecmp((const char*)Buff, "JASC-PAL")) {
+ 		Error = IL_TRUE;
+ 	}
+ 	iFgetw(Buff, BUFFLEN, PalFile);
+-	if (_stricmp((const char*)Buff, "0100")) {
++	if (strcasecmp((const char*)Buff, "0100")) {
+ 		Error = IL_TRUE;
+ 	}
+ 
+--- ResIL-1.8.2/src-IL/src/il_pcx.cpp.omv~	2014-06-18 11:34:23.940379564 +0200
++++ ResIL-1.8.2/src-IL/src/il_pcx.cpp	2014-06-18 11:35:04.807379696 +0200
+@@ -16,6 +16,9 @@
+ #include "il_pcx.h"
+ #include "il_manip.h"
+ 
++// glibc's attempt to redefine putc to _IO_putc doesn't go well with the
++// putc member in struct SIO
++#undef putc
+ 
+ // Obtain .pcx header
+ ILuint iGetPcxHead(SIO* io, PCXHEAD *header)
+--- ResIL-1.8.2/src-IL/src/il_pic.cpp.omv~	2014-06-18 12:43:48.407392978 +0200
++++ ResIL-1.8.2/src-IL/src/il_pic.cpp	2014-06-18 12:43:57.110393006 +0200
+@@ -18,6 +18,8 @@
+ #include "il_manip.h"
+ #include <string.h>
+ 
++#undef getc
++#undef putc
+ 
+ // Internal function used to get the .pic header from the current file.
+ ILint iGetPicHead(SIO* io, PIC_HEAD *Header)
+--- ResIL-1.8.2/src-IL/src/il_pix.cpp.omv~	2014-06-18 14:26:48.681412885 +0200
++++ ResIL-1.8.2/src-IL/src/il_pix.cpp	2014-06-18 14:26:54.797412904 +0200
+@@ -16,6 +16,8 @@
+ #include "il_manip.h"
+ #include "il_endian.h"
+ 
++#undef getc
++#undef putc
+ 
+ #ifdef _MSC_VER
+ #pragma pack(push, pix_struct, 1)
+--- ResIL-1.8.2/src-IL/src/il_pnm.cpp.omv~	2014-06-18 13:38:25.607403534 +0200
++++ ResIL-1.8.2/src-IL/src/il_pnm.cpp	2014-06-18 13:38:43.150403590 +0200
+@@ -20,6 +20,9 @@
+ #include "il_manip.h"
+ #include "il_bits.h"
+ 
++#undef putc
++#undef getc
++
+ // According to the ppm specs, it's 70, but PSP
+ //  likes to output longer lines.
+ #define MAX_BUFFER 180  
+--- ResIL-1.8.2/src-IL/src/il_psd.cpp.omv~	2014-06-18 14:25:59.963412728 +0200
++++ ResIL-1.8.2/src-IL/src/il_psd.cpp	2014-06-18 14:26:07.757412753 +0200
+@@ -20,6 +20,9 @@
+ #ifndef IL_NO_PSD
+ #include "il_psd.h"
+ 
++#undef getc
++#undef putc
++
+ static float ubyte_to_float(ILubyte val)
+ {
+ 	return ((float)val) / 255.0f;
+--- ResIL-1.8.2/src-IL/src/il_psp.cpp.omv~	2014-06-18 14:26:33.195412835 +0200
++++ ResIL-1.8.2/src-IL/src/il_psp.cpp	2014-06-18 14:26:42.494412865 +0200
+@@ -61,7 +61,7 @@ ILboolean iIsValidPsp()
+ // Internal function used to check if the HEADER is a valid Psp header.
+ ILboolean iCheckPsp()
+ {
+-	if (_stricmp(Header.FileSig, "Paint Shop Pro Image File\n\x1a"))
++	if (strcasecmp(Header.FileSig, "Paint Shop Pro Image File\n\x1a"))
+ 		return IL_FALSE;
+ 	if (Header.MajorVersion < 3 || Header.MajorVersion > 5)
+ 		return IL_FALSE;
+--- ResIL-1.8.2/src-IL/src/il_pxr.cpp.omv~	2014-06-18 14:27:00.865412924 +0200
++++ ResIL-1.8.2/src-IL/src/il_pxr.cpp	2014-06-18 14:27:07.469412945 +0200
+@@ -16,6 +16,8 @@
+ #include "il_manip.h"
+ #include "il_endian.h"
+ 
++#undef putc
++#undef getc
+ 
+ #ifdef _MSC_VER
+ #pragma pack(push, pxr_struct, 1)
+--- ResIL-1.8.2/src-IL/src/il_raw.cpp.omv~	2014-06-18 13:45:39.779404932 +0200
++++ ResIL-1.8.2/src-IL/src/il_raw.cpp	2014-06-18 13:45:46.470404954 +0200
+@@ -12,6 +12,8 @@
+ 
+ 
+ #include "il_internal.h"
++#undef putc
++#undef getc
+ #ifndef IL_NO_RAW
+ 
+ 
+--- ResIL-1.8.2/src-IL/src/il_rle.cpp.omv~	2014-06-18 11:35:22.118379751 +0200
++++ ResIL-1.8.2/src-IL/src/il_rle.cpp	2014-06-18 11:36:36.263379990 +0200
+@@ -17,7 +17,7 @@ ILboolean ilRleCompressLine(ILubyte *p,
+ 	ILint		SameCount;		// number of identical adjacent pixels
+ 	ILint		RLEBufSize = 0; // count of number of bytes encoded
+ 	ILint		MaxRun;
+-	const ILint bmp_pad_to_even = 1 - ((ILint)q - *DestWidth) % 2;
++	const long bmp_pad_to_even = 1 - ((long)q - *DestWidth) % 2;
+ 
+ 	switch( CompressMode ) {
+ 		case IL_TGACOMP:
+--- ResIL-1.8.2/src-IL/src/il_sgi.cpp.omv~	2014-06-18 12:44:09.682393046 +0200
++++ ResIL-1.8.2/src-IL/src/il_sgi.cpp	2014-06-18 12:44:14.271393061 +0200
+@@ -18,6 +18,7 @@
+ 
+ static char *FName = NULL;
+ 
++#undef putc
+ 
+ /*----------------------------------------------------------------------------*/
+ 
+--- ResIL-1.8.2/src-IL/src/il_states.cpp.omv~	2014-06-18 13:35:20.374402937 +0200
++++ ResIL-1.8.2/src-IL/src/il_states.cpp	2014-06-18 13:35:47.839403026 +0200
+@@ -843,20 +843,20 @@ void ILAPIENTRY ilPushAttrib(ILuint Bits
+ 		if (ilStates[ilCurrentPos].ilCHeader)
+ 			ifree(ilStates[ilCurrentPos].ilCHeader);
+ 
+-		ilStates[ilCurrentPos].ilTgaId = _strdup(ilStates[ilCurrentPos-1].ilTgaId);
+-		ilStates[ilCurrentPos].ilTgaAuthName = _strdup(ilStates[ilCurrentPos-1].ilTgaAuthName);
+-		ilStates[ilCurrentPos].ilTgaAuthComment = _strdup(ilStates[ilCurrentPos-1].ilTgaAuthComment);
+-		ilStates[ilCurrentPos].ilPngAuthName = _strdup(ilStates[ilCurrentPos-1].ilPngAuthName);
+-		ilStates[ilCurrentPos].ilPngTitle = _strdup(ilStates[ilCurrentPos-1].ilPngTitle);
+-		ilStates[ilCurrentPos].ilPngDescription = _strdup(ilStates[ilCurrentPos-1].ilPngDescription);
++		ilStates[ilCurrentPos].ilTgaId = strdup(ilStates[ilCurrentPos-1].ilTgaId);
++		ilStates[ilCurrentPos].ilTgaAuthName = strdup(ilStates[ilCurrentPos-1].ilTgaAuthName);
++		ilStates[ilCurrentPos].ilTgaAuthComment = strdup(ilStates[ilCurrentPos-1].ilTgaAuthComment);
++		ilStates[ilCurrentPos].ilPngAuthName = strdup(ilStates[ilCurrentPos-1].ilPngAuthName);
++		ilStates[ilCurrentPos].ilPngTitle = strdup(ilStates[ilCurrentPos-1].ilPngTitle);
++		ilStates[ilCurrentPos].ilPngDescription = strdup(ilStates[ilCurrentPos-1].ilPngDescription);
+ 
+ 		//2003-09-01: added tif strings
+-		ilStates[ilCurrentPos].ilTifDescription = _strdup(ilStates[ilCurrentPos-1].ilTifDescription);
+-		ilStates[ilCurrentPos].ilTifHostComputer = _strdup(ilStates[ilCurrentPos-1].ilTifHostComputer);
+-		ilStates[ilCurrentPos].ilTifDocumentName = _strdup(ilStates[ilCurrentPos-1].ilTifDocumentName);
+-		ilStates[ilCurrentPos].ilTifAuthName = _strdup(ilStates[ilCurrentPos-1].ilTifAuthName);
++		ilStates[ilCurrentPos].ilTifDescription = strdup(ilStates[ilCurrentPos-1].ilTifDescription);
++		ilStates[ilCurrentPos].ilTifHostComputer = strdup(ilStates[ilCurrentPos-1].ilTifHostComputer);
++		ilStates[ilCurrentPos].ilTifDocumentName = strdup(ilStates[ilCurrentPos-1].ilTifDocumentName);
++		ilStates[ilCurrentPos].ilTifAuthName = strdup(ilStates[ilCurrentPos-1].ilTifAuthName);
+ 
+-		ilStates[ilCurrentPos].ilCHeader = _strdup(ilStates[ilCurrentPos-1].ilCHeader);
++		ilStates[ilCurrentPos].ilCHeader = strdup(ilStates[ilCurrentPos-1].ilCHeader);
+ 	}
+ 
+ 	return;
+@@ -959,60 +959,60 @@ void ILAPIENTRY ilSetString(ILenum Mode,
+ 		case IL_TGA_ID_STRING:
+ 			if (ilStates[ilCurrentPos].ilTgaId)
+ 				ifree(ilStates[ilCurrentPos].ilTgaId);
+-			ilStates[ilCurrentPos].ilTgaId = _strdup(String);
++			ilStates[ilCurrentPos].ilTgaId = strdup(String);
+ 			break;
+ 		case IL_TGA_AUTHNAME_STRING:
+ 			if (ilStates[ilCurrentPos].ilTgaAuthName)
+ 				ifree(ilStates[ilCurrentPos].ilTgaAuthName);
+-			ilStates[ilCurrentPos].ilTgaAuthName = _strdup(String);
++			ilStates[ilCurrentPos].ilTgaAuthName = strdup(String);
+ 			break;
+ 		case IL_TGA_AUTHCOMMENT_STRING:
+ 			if (ilStates[ilCurrentPos].ilTgaAuthComment)
+ 				ifree(ilStates[ilCurrentPos].ilTgaAuthComment);
+-			ilStates[ilCurrentPos].ilTgaAuthComment = _strdup(String);
++			ilStates[ilCurrentPos].ilTgaAuthComment = strdup(String);
+ 			break;
+ 		case IL_PNG_AUTHNAME_STRING:
+ 			if (ilStates[ilCurrentPos].ilPngAuthName)
+ 				ifree(ilStates[ilCurrentPos].ilPngAuthName);
+-			ilStates[ilCurrentPos].ilPngAuthName = _strdup(String);
++			ilStates[ilCurrentPos].ilPngAuthName = strdup(String);
+ 			break;
+ 		case IL_PNG_TITLE_STRING:
+ 			if (ilStates[ilCurrentPos].ilPngTitle)
+ 				ifree(ilStates[ilCurrentPos].ilPngTitle);
+-			ilStates[ilCurrentPos].ilPngTitle = _strdup(String);
++			ilStates[ilCurrentPos].ilPngTitle = strdup(String);
+ 			break;
+ 		case IL_PNG_DESCRIPTION_STRING:
+ 			if (ilStates[ilCurrentPos].ilPngDescription)
+ 				ifree(ilStates[ilCurrentPos].ilPngDescription);
+-			ilStates[ilCurrentPos].ilPngDescription = _strdup(String);
++			ilStates[ilCurrentPos].ilPngDescription = strdup(String);
+ 			break;
+ 
+ 		//2003-09-01: added tif strings
+ 		case IL_TIF_DESCRIPTION_STRING:
+ 			if (ilStates[ilCurrentPos].ilTifDescription)
+ 				ifree(ilStates[ilCurrentPos].ilTifDescription);
+-			ilStates[ilCurrentPos].ilTifDescription = _strdup(String);
++			ilStates[ilCurrentPos].ilTifDescription = strdup(String);
+ 			break;
+ 		case IL_TIF_HOSTCOMPUTER_STRING:
+ 			if (ilStates[ilCurrentPos].ilTifHostComputer)
+ 				ifree(ilStates[ilCurrentPos].ilTifHostComputer);
+-			ilStates[ilCurrentPos].ilTifHostComputer = _strdup(String);
++			ilStates[ilCurrentPos].ilTifHostComputer = strdup(String);
+ 			break;
+ 		case IL_TIF_DOCUMENTNAME_STRING:
+ 						if (ilStates[ilCurrentPos].ilTifDocumentName)
+ 				ifree(ilStates[ilCurrentPos].ilTifDocumentName);
+-			ilStates[ilCurrentPos].ilTifDocumentName = _strdup(String);
++			ilStates[ilCurrentPos].ilTifDocumentName = strdup(String);
+ 			break;
+ 		case IL_TIF_AUTHNAME_STRING:
+ 			if (ilStates[ilCurrentPos].ilTifAuthName)
+ 				ifree(ilStates[ilCurrentPos].ilTifAuthName);
+-			ilStates[ilCurrentPos].ilTifAuthName = _strdup(String);
++			ilStates[ilCurrentPos].ilTifAuthName = strdup(String);
+ 			break;
+ 
+ 		case IL_CHEAD_HEADER_STRING:
+ 			if (ilStates[ilCurrentPos].ilCHeader)
+ 				ifree(ilStates[ilCurrentPos].ilCHeader);
+-			ilStates[ilCurrentPos].ilCHeader = _strdup(String);
++			ilStates[ilCurrentPos].ilCHeader = strdup(String);
+ 			break;
+ 
+ 		default:
+--- ResIL-1.8.2/src-IL/src/il_sun.cpp.omv~	2014-06-18 14:28:39.457413242 +0200
++++ ResIL-1.8.2/src-IL/src/il_sun.cpp	2014-06-18 14:28:45.501413261 +0200
+@@ -23,6 +23,8 @@
+ #ifndef IL_NO_SUN
+ #include "il_bits.h"
+ 
++#undef getc
++
+ ILboolean	iLoadSunInternal(void);
+ 
+ typedef struct SUNHEAD
+--- ResIL-1.8.2/src-IL/src/il_targa.cpp.omv~	2014-06-18 13:39:10.739403679 +0200
++++ ResIL-1.8.2/src-IL/src/il_targa.cpp	2014-06-18 13:39:37.839403767 +0200
+@@ -20,6 +20,9 @@
+ #include "il_bits.h"
+ #include "il_endian.h"
+ 
++#undef putc
++#undef getc
++
+ #ifdef DJGPP
+ #include <dos.h>
+ #endif
+--- ResIL-1.8.2/src-IL/src/il_vtf.cpp.omv~	2014-06-18 14:27:15.242412970 +0200
++++ ResIL-1.8.2/src-IL/src/il_vtf.cpp	2014-06-18 14:27:19.149412983 +0200
+@@ -18,6 +18,7 @@
+ #include "il_vtf.h"
+ #include "il_dds.h"
+ 
++#undef putc
+ 
+ // Internal function used to get the VTF header from the current file.
+ ILboolean iGetVtfHead(SIO* io, VTFHEAD *Header)
+--- ResIL-1.8.2/src-IL/src/il_wbmp.cpp.omv~	2014-06-18 14:28:55.561413293 +0200
++++ ResIL-1.8.2/src-IL/src/il_wbmp.cpp	2014-06-18 14:29:05.005413324 +0200
+@@ -16,6 +16,8 @@
+ #ifndef IL_NO_WBMP
+ #include "il_bits.h"
+ 
++#undef getc
++#undef putc
+ 
+ ILboolean	iLoadWbmpInternal(void);
+ ILboolean	iSaveWbmpInternal(void);
+--- ResIL-1.8.2/src-IL/src/il_xpm.cpp.omv~	2014-06-18 14:27:25.610413004 +0200
++++ ResIL-1.8.2/src-IL/src/il_xpm.cpp	2014-06-18 14:27:42.773413059 +0200
+@@ -15,6 +15,8 @@
+ #ifndef IL_NO_XPM
+ #include <ctype.h>
+ 
++#undef getc
++
+ // Global variables
+ typedef ILubyte XpmPixel[4];
+ 
+@@ -244,7 +246,7 @@ ILboolean XpmPredefCol(char *Buff, XpmPi
+ 	ILint len;
+ 	ILint val = 128;
+ 
+-	if (!_stricmp(Buff, "none")) {
++	if (!strcasecmp(Buff, "none")) {
+ 		(*Colour)[0] = 0;
+ 		(*Colour)[1] = 0;
+ 		(*Colour)[2] = 0;
+@@ -254,49 +256,49 @@ ILboolean XpmPredefCol(char *Buff, XpmPi
+ 
+ 	(*Colour)[3] = 255;
+ 
+-	if (!_stricmp(Buff, "black")) {
++	if (!strcasecmp(Buff, "black")) {
+ 		(*Colour)[0] = 0;
+ 		(*Colour)[1] = 0;
+ 		(*Colour)[2] = 0;
+ 		return IL_TRUE;
+ 	}
+-	if (!_stricmp(Buff, "white")) {
++	if (!strcasecmp(Buff, "white")) {
+ 		(*Colour)[0] = 255;
+ 		(*Colour)[1] = 255;
+ 		(*Colour)[2] = 255;
+ 		return IL_TRUE;
+ 	}
+-	if (!_stricmp(Buff, "red")) {
++	if (!strcasecmp(Buff, "red")) {
+ 		(*Colour)[0] = 255;
+ 		(*Colour)[1] = 0;
+ 		(*Colour)[2] = 0;
+ 		return IL_TRUE;
+ 	}
+-	if (!_stricmp(Buff, "green")) {
++	if (!strcasecmp(Buff, "green")) {
+ 		(*Colour)[0] = 0;
+ 		(*Colour)[1] = 255;
+ 		(*Colour)[2] = 0;
+ 		return IL_TRUE;
+ 	}
+-	if (!_stricmp(Buff, "blue")) {
++	if (!strcasecmp(Buff, "blue")) {
+ 		(*Colour)[0] = 0;
+ 		(*Colour)[1] = 0;
+ 		(*Colour)[2] = 255;
+ 		return IL_TRUE;
+ 	}
+-	if (!_stricmp(Buff, "yellow")) {
++	if (!strcasecmp(Buff, "yellow")) {
+ 		(*Colour)[0] = 255;
+ 		(*Colour)[1] = 255;
+ 		(*Colour)[2] = 0;
+ 		return IL_TRUE;
+ 	}
+-	if (!_stricmp(Buff, "cyan")) {
++	if (!strcasecmp(Buff, "cyan")) {
+ 		(*Colour)[0] = 0;
+ 		(*Colour)[1] = 255;
+ 		(*Colour)[2] = 255;
+ 		return IL_TRUE;
+ 	}
+-	if (!_stricmp(Buff, "gray")) {
++	if (!strcasecmp(Buff, "gray")) {
+ 		(*Colour)[0] = 128;
+ 		(*Colour)[1] = 128;
+ 		(*Colour)[2] = 128;
+--- ResIL-1.8.2/include/IL/devil_internal_exports.h.omv~	2014-06-18 15:24:53.177424108 +0200
++++ ResIL-1.8.2/include/IL/devil_internal_exports.h	2014-06-18 15:25:07.165424153 +0200
+@@ -109,7 +109,7 @@ typedef struct ILimage
+ 	ILubyte*        DxtcData;    //!< compressed data
+ 	ILenum          DxtcFormat;  //!< compressed data format
+ 	ILuint          DxtcSize;    //!< compressed data size
+-	SIO io;
++	struct SIO io;
+ } ILimage;
+ 
+ 
+--- ResIL-1.8.2/src-ILUT/src/ilut_sdlsurface.cpp.omv~	2014-06-18 15:24:12.825423978 +0200
++++ ResIL-1.8.2/src-ILUT/src/ilut_sdlsurface.cpp	2014-06-18 15:24:25.605424020 +0200
+@@ -117,7 +117,7 @@ SDL_Surface *ILAPIENTRY ilutConvertToSDL
+ 		memcpy(Bitmap->pixels, Data, Image->SizeOfData);
+ 	}
+ 	else {  // Must pad the lines on some images.
+-		Dest = Bitmap->pixels;
++		Dest = reinterpret_cast<ILubyte*>(Bitmap->pixels);
+ 		for (i = 0; i < Image->Height; i++) {
+ 			memcpy(Dest, Data + i * Image->Bps, Image->Bps);
+ 			imemclear(Dest + Image->Bps, Pad);

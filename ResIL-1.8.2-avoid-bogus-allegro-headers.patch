@@ -1,0 +1,19 @@
+--- ResIL-1.8.2/include/IL/ilut.h.omv~	2014-06-18 14:54:55.497418318 +0200
++++ ResIL-1.8.2/include/IL/ilut.h	2014-06-18 14:57:54.830418896 +0200
+@@ -266,14 +266,8 @@ ILAPI ILboolean     ILAPIENTRY ilutRende
+ 
+ // ImageLib Utility Toolkit's Allegro Functions
+ #ifdef ILUT_USE_ALLEGRO
+-	#ifdef __cplusplus
+-	extern "C" {
+-	#endif
+-		#include <allegro.h>
+-	#ifdef __cplusplus
+-	}
+-	#endif
+-
++	#include <allegro/gfx.h>
++	#include <allegro/palette.h>
+ 	ILAPI BITMAP* ILAPIENTRY ilutAllegLoadImage(ILstring FileName);
+ 	ILAPI BITMAP* ILAPIENTRY ilutConvertToAlleg(PALETTE Pal);
+ #endif//ILUT_USE_ALLEGRO

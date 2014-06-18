@@ -1,0 +1,67 @@
+--- ResIL-1.8.2/m4/devil-definitions.m4.omv~	2014-06-18 15:56:54.609430297 +0200
++++ ResIL-1.8.2/m4/devil-definitions.m4	2014-06-18 15:57:42.941430453 +0200
+@@ -181,13 +181,13 @@ AC_DEFUN([DEVIL_CHECK_NVIDIA_TEXTOOLS],
+                                            [libnvtt-nvidia_texture_tools]) ]) ])
+ 
+ AC_DEFUN([SETTLE_LCMS],
+-[AC_CHECK_LIB([lcms],
++[AC_CHECK_LIB([lcms2],
+               [main],
+               [have_lcms_lib="yes"
+-               IL_LIBS="-llcms $IL_LIBS"])
+-AC_CHECK_HEADER([lcms/lcms.h],
++               IL_LIBS="-llcms2 $IL_LIBS"])
++AC_CHECK_HEADER([lcms/lcms2.h],
+                 [have_lcms_h="yes"])
+-AC_CHECK_HEADER([lcms.h],
++AC_CHECK_HEADER([lcms2.h],
+                 [have_lcms_h="yes"
+                  lcms_nodirinclude="yes"]) 
+ AS_IF([test "x$lcms_nodirinclude" = "xyes"],
+@@ -196,7 +196,7 @@ AS_IF([test "x$lcms_nodirinclude" = "xye
+                  [LCMS include without lcms/ support]) ])
+ AS_IF([test "x$have_lcms_lib" = "xyes" -a "x$have_lcms_h" = "xyes"],
+       [have_lcms="yes"
+-       IL_LIBS_REQUIRED="$IL_LIBS_REQUIRED lcms"
++       IL_LIBS_REQUIRED="$IL_LIBS_REQUIRED lcms2"
+        lib_test_result="yes"],
+       [lib_test_result="no"]) ])
+ 
+--- ResIL-1.8.2/src-IL/src/il_profiles.cpp.omv~	2014-06-18 15:54:48.242429890 +0200
++++ ResIL-1.8.2/src-IL/src/il_profiles.cpp	2014-06-18 15:56:29.157430215 +0200
+@@ -18,27 +18,17 @@
+ #undef  PACKAGE_NAME
+ #endif
+ 
+-#if (!defined(_WIN32) && !defined(_WIN64))
+-	#define NON_WINDOWS 1
+-	#ifdef LCMS_NODIRINCLUDE
+-		#include <lcms.h>
+-	#else
+-		#include <lcms/lcms.h>
+-	#endif
+-	
+-#else
+-	#if defined(IL_USE_PRAGMA_LIBS)
+-		#if defined(_MSC_VER) || defined(__BORLANDC__)
+-			#ifndef _DEBUG
+-				#pragma comment(lib, "lcms.lib")
+-			#else
+-				#pragma comment(lib, "lcms-d.lib")
+-			#endif
++#if defined(IL_USE_PRAGMA_LIBS)
++	#if defined(_MSC_VER) || defined(__BORLANDC__)
++		#ifndef _DEBUG
++			#pragma comment(lib, "lcms.lib")
++		#else
++			#pragma comment(lib, "lcms-d.lib")
+ 		#endif
+ 	#endif
++#endif
+ 
+-	#include <lcms2.h>
+-#endif//_WIN32
++#include <lcms2.h>
+ 
+ #ifdef PACKAGE_NAME
+ #undef PACKAGE_NAME
