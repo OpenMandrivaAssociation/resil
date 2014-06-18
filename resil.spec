@@ -127,7 +127,7 @@ export CFLAGS="%{optflags} -O3 -funroll-loops -ffast-math -fomit-frame-pointer -
 %else
 %ifarch %ix86
 	--enable-x86 \
-	--disable-x86_64
+	--disable-x86_64 \
 	--disable-sse \
 	--disable-sse2 \
 	--disable-sse3 \
