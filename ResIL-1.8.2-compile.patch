@@ -11,25 +11,13 @@
  #ifndef IL_USE_IJL
  	ILboolean __cdecl iLoadJpegInternal(void);
  	ILboolean iSaveJpegInternal(void);
---- ResIL-1.8.2/src-IL/src/il_alloc.cpp.omv~	2014-06-18 11:33:26.748379380 +0200
-+++ ResIL-1.8.2/src-IL/src/il_alloc.cpp	2014-06-18 11:33:39.103379420 +0200
-@@ -23,6 +23,7 @@
- 	#endif
- #endif//_WIN32
- 
-+#include "il.h" // for CONST_RESTRICT
- #include "il_internal.h"
- #include <stdlib.h>
- #include <math.h>
 --- ResIL-1.8.2/src-IL/src/il_bmp.cpp.omv~	2014-06-18 12:44:33.218393122 +0200
 +++ ResIL-1.8.2/src-IL/src/il_bmp.cpp	2014-06-18 13:33:56.696402668 +0200
-@@ -17,6 +17,12 @@
+@@ -17,6 +17,10 @@
  #include "il_bmp.h"
  #include "il_endian.h"
  #include <stdio.h>
 +#include <stdint.h>
-+#undef CONST_RESTRICT
-+#define CONST_RESTRICT const
 +typedef uint16_t WORD;
 +typedef uint32_t DWORD;
 +#undef putc
@@ -306,7 +294,7 @@
  	ILint		RLEBufSize = 0; // count of number of bytes encoded
  	ILint		MaxRun;
 -	const ILint bmp_pad_to_even = 1 - ((ILint)q - *DestWidth) % 2;
-+	const long bmp_pad_to_even = 1 - ((long)q - *DestWidth) % 2;
++	const ILint bmp_pad_to_even = 1 - ((long)q - *DestWidth) % 2;
  
  	switch( CompressMode ) {
  		case IL_TGACOMP:
@@ -570,3 +558,15 @@
  		for (i = 0; i < Image->Height; i++) {
  			memcpy(Dest, Data + i * Image->Bps, Image->Bps);
  			imemclear(Dest + Image->Bps, Pad);
+--- ResIL-1.8.2/include/IL/il.h.omv~	2014-06-28 11:50:38.812900171 +0200
++++ ResIL-1.8.2/include/IL/il.h	2014-06-28 11:51:24.481329237 +0200
+@@ -63,6 +63,9 @@ extern "C" {
+ 	#endif
+ #endif
+ 
++#if defined(__cplusplus) && (defined(__GNUC__) || defined(__CLANG__))
++#define restrict __restrict__
++#endif
+ #ifdef RESTRICT_KEYWORD
+ #define RESTRICT restrict
+ #define CONST_RESTRICT const restrict
