@@ -9,7 +9,7 @@
 Summary:	Open source image library
 Name:		resil
 Version:	1.8.2
-Release:	2
+Release:	3
 License:	LGPLv2+
 Group:		System/Libraries
 Url:		http://resil.sourceforge.net/
