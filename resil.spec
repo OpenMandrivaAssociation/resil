@@ -8,8 +8,8 @@
 
 Summary:	Open source image library
 Name:		resil
-Version:	1.8.2
-Release:	4
+Version:	1.8.3
+Release:	1
 License:	LGPLv2+
 Group:		System/Libraries
 Url:		http://resil.sourceforge.net/
@@ -114,7 +114,7 @@ autoconf
 %build
 export CFLAGS="%{optflags} -O3 -funroll-loops -ffast-math -fomit-frame-pointer -fexpensive-optimizations"
 
-%configure	\
+%configure \
 	--disable-static \
 	--enable-shared \
 	--enable-ILU \
