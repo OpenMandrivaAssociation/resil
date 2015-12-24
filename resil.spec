@@ -14,11 +14,11 @@ License:	LGPLv2+
 Group:		System/Libraries
 Url:		http://resil.sourceforge.net/
 Source0:	http://downloads.sourceforge.net/project/resil/%{version}/%{oname}-%{version}.zip
-#Patch0:		ResIL-1.8.2-fix-buildsystem.patch
-#Patch1:		ResIL-1.8.2-compile.patch
-#Patch2:		ResIL-1.8.2-avoid-bogus-allegro-headers.patch
-#Patch3:		ResIL-1.8.2-fix-EXR.patch
-#Patch4:		ResIL-1.8.2-lcms2-on-unix.patch
+Patch0:		ResIL-1.8.2-fix-buildsystem.patch
+Patch1:		ResIL-1.8.2-compile.patch
+Patch2:		ResIL-1.8.2-avoid-bogus-allegro-headers.patch
+Patch3:		ResIL-1.8.2-fix-EXR.patch
+Patch4:		ResIL-1.8.2-lcms2-on-unix.patch
 BuildRequires:	file
 BuildRequires:	libtool
 BuildRequires:	jpeg-devel
@@ -99,7 +99,7 @@ chmod -R 0777 Input\ Libs/zlib128-dll
 rm -rf \
 	Input\ Libs
 
-chmod 644 AUTHORS CREDITS ChangeLog README
+chmod 644 AUTHORS CREDITS ChangeLog README.unix
 
 # strip away annoying ^M
 find . -type f|xargs file|grep 'CRLF'|cut -d: -f1|xargs perl -p -i -e 's/\r//'
