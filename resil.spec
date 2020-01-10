@@ -91,7 +91,7 @@ Development headers and libraries for writing programs using %{oname}.
 
 %prep
 %setup -qn %{oname}-%{version}
-%apply_patches
+%autopatch -p1
 
 # Funny 0000 permissions...
 chmod -R 0777 Input\ Libs/zlib128-dll
