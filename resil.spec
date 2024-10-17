@@ -12,7 +12,7 @@ Version:	1.8.2
 Release:	6
 License:	LGPLv2+
 Group:		System/Libraries
-Url:		http://resil.sourceforge.net/
+Url:		https://resil.sourceforge.net/
 Source0:	http://downloads.sourceforge.net/project/resil/%{version}/%{oname}-%{version}.zip
 Patch0:		ResIL-1.8.2-fix-buildsystem.patch
 Patch1:		ResIL-1.8.2-compile.patch
