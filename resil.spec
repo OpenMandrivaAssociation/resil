@@ -19,6 +19,11 @@ Patch1:		ResIL-1.8.2-compile.patch
 Patch2:		ResIL-1.8.2-avoid-bogus-allegro-headers.patch
 Patch3:		ResIL-1.8.2-fix-EXR.patch
 Patch4:		ResIL-1.8.2-lcms2-on-unix.patch
+BuildRequires:	autoconf
+BuildRequires:	automake
+BuildRequires:	libtool-base
+BuildRequires:	slibtool
+BuildRequires:	make
 BuildRequires:	file
 BuildRequires:	libtool
 BuildRequires:	jpeg-devel
